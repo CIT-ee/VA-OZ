@@ -5,3 +5,7 @@ packrat/src/
 /* ignore environment related files */
 .env
 .Renviron
+
+/* ignore raw config files */
+config/
+
