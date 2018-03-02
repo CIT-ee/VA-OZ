@@ -33,3 +33,17 @@ build_quality_of_life_dim <- function(tract.dat){
   cbind(tract_geoid, col_index_in_tract, num_pub_schools_in_tract)
   
 }
+
+build_industrial_base_dim <- function(tract.dat){
+  locationQuotient.dat <- get.dataworld.df('cost_of_living') %>%
+                          select(fips, `2017_location_quotient`)
+  competitiveEffect.dat <- get.dataworld.df('cost_of_living') %>%
+                            select(fips, competitive_effect)
+  
+  location_quotient_in_tract <- add_county_data(locationQuotient.dat, tract.dat)
+  competitive_effect_in_tract <- add_county_data(competitiveEffect.dat, tract.dat)
+  
+  tract_geoid <- tract.dat$geoid
+  cbind(tract_geoid, location_quotient_in_tract, competitive_effect_in_tract)
+  
+}
