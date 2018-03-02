@@ -49,7 +49,7 @@ build_infrastructure_dim <- function(tract.dat){
   
   tract_geoid <- tract.dat$geoid
   cbind(tract_geoid, total_spaces_in_tract , comm_airports_count_in_tract, 
-        gen_airports_count_in_tract, mean_tract_dist_to_dc, 
+        gen_airports_count_in_tract, mean_tract_to_dc_dist, 
         mean_tract_to_port_dist)
 }
 
