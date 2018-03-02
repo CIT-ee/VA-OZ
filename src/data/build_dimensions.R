@@ -20,6 +20,39 @@ build_support_programs_dim <- function(tract.dat){
   cbind(tract_geoid, tzone_mask, hubzone_mask, techzone_mask, ezone_mask, gozone_mask)
 }
 
+build_infrastructure_dim <- function(tract.dat){
+  aggregator <- function(x) sum(x, na.rm = TRUE)
+  
+  availableProperties.dat <- get.dataworld.df('available_properties_with_tract') %>%
+                              select(geoid_census_tract, spacetotalavailable)
+  commercialAirportCount.dat <- get.dataworld.df('commercial_airp_count')
+  generalAirportCount.dat <- get.dataworld.df('general_airport_count')
+  tractDCDist.dat <- get.dataworld.df('tract_to_dc_distance_2')
+  tractPortDist.dat <- get.dataworld.df('tract_to_port_distance') 
+  
+  total_spaces_in_tract <- aggr_tract_data(availableProperties.dat, tract.dat, 
+                                           'spacetotalavailable', aggregator) %>%
+                            rename(total_space_available = count)
+  comm_airports_count_in_tract <- commercialAirportCount.dat %>%
+                                    right_join(tract.dat, by="geoid") %>%
+                                    select(commercial_airp_count)
+  gen_airports_count_in_tract <- generalAirportCount.dat %>%
+                                  right_join(tract.dat, by="geoid") %>%
+                                  select(general_airport_count)
+  mean_tract_to_dc_dist <- tractDCDist.dat %>%
+                            right_join(tract.dat, by="geoid") %>%
+                            select(duration_hours)
+  mean_tract_to_port_dist <- tractPortDist.dat %>%
+                              right_join(tract.dat, by="geoid") %>%
+                              select(duration_hours)
+  
+  
+  tract_geoid <- tract.dat$geoid
+  cbind(tract_geoid, total_spaces_in_tract , comm_airports_count_in_tract, 
+        gen_airports_count_in_tract, mean_tract_dist_to_dc, 
+        mean_tract_to_port_dist)
+}
+
 build_quality_of_life_dim <- function(tract.dat){
   aggregator <- function(x) sum(!is.na(x))
   
