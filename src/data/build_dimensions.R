@@ -69,3 +69,25 @@ build_quality_of_life_dim <- function(tract.dat){
   cbind(tract_geoid, col_index_in_tract, num_pub_schools_in_tract)
   
 }
+
+build_financial_capital_dim <- function(tract.dat){
+  commercialBanks.dat <- get.dataworld.df('commercial_banks') %>%
+                          select(fips, number_of_establishments)
+  cdfis.dat <- get.dataworld.df('cdfis_with_trac_count')
+  ventureCapitalFirms.dat <- get.dataworld.df('vc_with_tract_count')
+  
+  comm_banks_count_in_tract <- add_county_data(commercialBanks.dat, tract.dat) %>%
+                                rename(num_commercial_banks = number_of_establishments)
+  cdfis_count_in_tract <- cdfis.dat %>%
+                          right_join(tract.dat, by='geoid') %>%
+                          select(cdfis_with_trac_count)
+  vc_count_in_tract <- ventureCapitalFirms.dat %>%
+                        right_join(tract.dat, by='geoid') %>%
+                        select(vc_with_tract_count)
+  
+  
+  
+  tract_geoid = tract.dat$geoid
+  cbind(tract_geoid, comm_banks_count_in_tract, 
+        cdfis_count_in_tract, vc_count_in_tract)
+}
