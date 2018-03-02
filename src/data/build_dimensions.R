@@ -21,12 +21,15 @@ build_support_programs_dim <- function(tract.dat){
 }
 
 build_quality_of_life_dim <- function(tract.dat){
+  aggregator <- function(x) sum(!is.na(x))
+  
   costOfLiving.dat <- get.dataworld.df('cost_of_living') %>%
                       select(fips, col_index)
   publicSchools.dat <- get.dataworld.df('public_schools_with_tract')
   
   col_index_in_tract <- add_county_data(costOfLiving.dat, tract.dat)
-  num_pub_schools_in_tract <- aggr_tract_data(publicSchools.dat, tract.dat) %>%
+  num_pub_schools_in_tract <- aggr_tract_data(publicSchools.dat, tract.dat, 
+                                              'school_address', aggregator) %>%
                               rename(num_public_schools = count)
   
   tract_geoid <- tract.dat$geoid
