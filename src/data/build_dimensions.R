@@ -70,6 +70,28 @@ build_quality_of_life_dim <- function(tract.dat){
   
 }
 
+build_industrial_base_dim <- function(tract.dat){
+  locationQuotient.dat <- get.dataworld.df('cost_of_living') %>%
+                          select(fips, `2017_location_quotient`)
+  competitiveEffect.dat <- get.dataworld.df('cost_of_living') %>%
+                            select(fips, competitive_effect)
+  fortune1000Count.dat <- get.dataworld.df('fortune1000_va_count')
+  netResilience.dat <- get.dataworld.df('net_change_establishments') %>%
+                        select(geo_county, net_change_6years) %>%
+                        rename(fips = geo_county)
+  
+  location_quotient_in_tract <- add_county_data(locationQuotient.dat, tract.dat)
+  competitive_effect_in_tract <- add_county_data(competitiveEffect.dat, tract.dat)
+  fortune_1000_count_in_tract <- fortune1000Count.dat %>%
+                                  right_join(tract.dat, by='geoid') %>%
+                                  select(fortune1000_va_count)
+  net_resilience_in_tract <- add_county_data(netResilience.dat, tract.dat)
+  
+  tract_geoid <- tract.dat$geoid
+  cbind(tract_geoid, location_quotient_in_tract, competitive_effect_in_tract,
+        fortune_1000_count_in_tract, net_resilience_in_tract)
+}
+
 build_financial_capital_dim <- function(tract.dat){
   commercialBanks.dat <- get.dataworld.df('commercial_banks') %>%
                           select(fips, number_of_establishments)
