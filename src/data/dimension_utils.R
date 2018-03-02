@@ -9,10 +9,11 @@ add_county_data <- function(source.dat, tract.dat){
     select(-one_of(c('geoid', 'county_id')))
 }
 
-aggr_tract_data <- function(source.dat, tract.dat){
+aggr_tract_data <- function(source.dat, tract.dat, srcField, aggrFunc){
   # this counts NA rows as 1. Find better way to do this
   group.tract.data(source.dat, tract.dat) %>%
-    summarize(count = n()) %>%
+    # summarize(count = sum(!is.na(!!sym(srcField)))) %>%
+    summarize(count = aggrFunc(!!sym(srcField))) %>%
     select(-geoid)
 }
 
