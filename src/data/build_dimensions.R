@@ -64,14 +64,27 @@ build_quality_of_life_dim <- function(tract.dat){
   costOfLiving.dat <- get.dataworld.df('cost_of_living') %>%
                       select(fips, col_index)
   publicSchools.dat <- get.dataworld.df('public_schools_with_tract')
+  sportsVenuesCount.dat <- get.dataworld.df('sports_venues_count')
+  hospitalsCount.dat <- get.dataworld.df('hospitals_with_count')
+  higherEducation.dat <- get.dataworld.df('higher_educatio_count')
   
   col_index_in_tract <- add_county_data(costOfLiving.dat, tract.dat)
   num_pub_schools_in_tract <- aggr_tract_data(publicSchools.dat, tract.dat, 
                                               'school_address', aggregator) %>%
                               rename(num_public_schools = count)
+  num_sport_venues_in_tract <- sportsVenuesCount.dat %>%
+                                right_join(tract.dat, by = 'geoid') %>%
+                                select(sports_venues_count)
+  num_hospitals_in_tract <- hospitalsCount.dat %>%
+                            right_join(tract.dat, by = 'geoid') %>%
+                            select(hospitals_with_count)
+  num_higher_ed_in_tract <- higherEducation.dat %>%
+                            right_join(tract.dat, by = 'geoid') %>%
+                            select(higher_educatio_count)
   
   tract_geoid <- tract.dat$geoid
-  cbind(tract_geoid, col_index_in_tract, num_pub_schools_in_tract)
+  cbind(tract_geoid, col_index_in_tract, num_pub_schools_in_tract,
+        num_sport_venues_in_tract, num_hospitals_in_tract, num_higher_ed_in_tract)
   
 }
 
