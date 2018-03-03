@@ -17,8 +17,8 @@ aggr_tract_data <- function(source.dat, tract.dat, srcField, aggrFunc){
     select(-geoid)
 }
 
-get_incentives_mask <- function(source.dat, tract.dat, srcField){
+get_incentives_mask <- function(source.dat, tract.dat){
   group.tract.data(source.dat, tract.dat) %>% 
-    summarize(is_inzone = n_distinct(!!sym(srcField), na.rm = TRUE)) %>%
+    summarize(is_inzone = sum(!is.na(!!sym(names(.)[2])))) %>%
     select(-geoid)
 }

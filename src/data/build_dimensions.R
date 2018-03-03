@@ -4,20 +4,25 @@ build_support_programs_dim <- function(tract.dat){
   techZones.dat <- get.dataworld.df('technology_zones_with_tract')
   eZones.dat <- get.dataworld.df('ez_with_tract')
   goZones.dat <- get.dataworld.df('go_virginia_zones_with_tract')
+  sbdcCounts.dat <- get.dataworld.df('small_business_count')
   
-  tzone_mask <- get_incentives_mask(tobaccoZones.dat, tract.dat, 'shape_starea') %>%
-                rename_(in_tobacco_zone = names(.)[1])
-  hubzone_mask <- get_incentives_mask(hubZones.dat, tract.dat, 'status_as_of_jan_2018') %>%
-                  rename_(in_hub_zone = names(.)[1])
-  techzone_mask <- get_incentives_mask(techZones.dat, tract.dat, 'shapestarea') %>%
-                    rename_(in_tech_zone = names(.)[1])
-  ezone_mask <- get_incentives_mask(eZones.dat, tract.dat, 'shapestarea') %>%
-                rename_(in_enterprise_zone = names(.)[1])
-  gozone_mask <- get_incentives_mask(goZones.dat, tract.dat, 'shapestarea') %>%
-                  rename_(in_go_virginia_zone = names(.)[1])
-  
+  tzone_mask <- get_incentives_mask(tobaccoZones.dat, tract.dat) %>%
+                rename(in_tobacco_zone = is_inzone)
+  hubzone_mask <- get_incentives_mask(hubZones.dat, tract.dat) %>%
+                  rename(in_hub_zone = is_inzone)
+  techzone_mask <- get_incentives_mask(techZones.dat, tract.dat) %>%
+                    rename(in_tech_zone = is_inzone)
+  ezone_mask <- get_incentives_mask(eZones.dat, tract.dat) %>%
+                rename(in_enterprise_zone = is_inzone)
+  gozone_mask <- get_incentives_mask(goZones.dat, tract.dat) %>%
+                  rename(in_go_virginia_zone = is_inzone)
+  sbdc_count_in_tract <- sbdcCounts.dat %>%
+                          right_join(tract.dat, by = 'geoid') %>%
+                          select(small_business_count)
+                          
   tract_geoid <- tract.dat$geoid
-  cbind(tract_geoid, tzone_mask, hubzone_mask, techzone_mask, ezone_mask, gozone_mask)
+  cbind(tract_geoid, tzone_mask, hubzone_mask, techzone_mask, 
+        ezone_mask, gozone_mask, sbdc_count_in_tract)
 }
 
 build_infrastructure_dim <- function(tract.dat){
