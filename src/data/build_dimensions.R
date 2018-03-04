@@ -54,31 +54,30 @@ build_quality_of_life_dim <- function(tract_dat){
     left_join(get_dataworld_dat('sports_venues_count'), by = 'geoid') %>%
     left_join(get_dataworld_dat('hospitals_with_count'), by = 'geoid') %>%
     left_join(get_dataworld_dat('higher_educatio_count'), by = 'geoid') %>%
-    left_join(col_index_in_tract) %>%
-    left_join(num_pub_schools_in_tract) %>%
+    left_join(col_index_in_tract, by = 'geoid') %>%
+    left_join(num_pub_schools_in_tract, by = 'geoid') %>%
     select(-starts_with('column_a'))
 }
 
 build_industrial_base_dim <- function(tract_dat){
-  locationQuotient.dat <- get_dataworld_dat('cost_of_living') %>%
-                          select(fips, `2017_location_quotient`)
-  competitiveEffect.dat <- get_dataworld_dat('cost_of_living') %>%
-                            select(fips, competitive_effect)
-  fortune1000Count.dat <- get_dataworld_dat('fortune1000_va_count')
-  netResilience.dat <- get_dataworld_dat('net_change_establishments') %>%
-                        select(geo_county, net_change_6years) %>%
-                        rename(fips = geo_county)
+  location_quotient_in_tract <- get_dataworld_dat('cost_of_living') %>%
+    select(fips, `2017_location_quotient`) %>%
+    add_county_data(tract_dat)
+  competitive_effect_in_tract <- get_dataworld_dat('cost_of_living') %>%
+    select(fips, competitive_effect) %>%
+    add_county_data(tract_dat)
+  net_resilience_in_tract <- get_dataworld_dat('net_change_establishments') %>%
+    select(geo_county, net_change_6years) %>%
+    rename(fips = geo_county) %>%
+    add_county_data(tract_dat)
   
-  location_quotient_in_tract <- add_county_data(locationQuotient.dat, tract_dat)
-  competitive_effect_in_tract <- add_county_data(competitiveEffect.dat, tract_dat)
-  fortune_1000_count_in_tract <- fortune1000Count.dat %>%
-                                  right_join(tract_dat, by='geoid') %>%
-                                  select(fortune1000_va_count)
-  net_resilience_in_tract <- add_county_data(netResilience.dat, tract_dat)
-  
-  tract_geoid <- tract_dat$geoid
-  cbind(tract_geoid, location_quotient_in_tract, competitive_effect_in_tract,
-        fortune_1000_count_in_tract, net_resilience_in_tract)
+  tract_dat %>%
+    select(geoid) %>%
+    left_join(get_dataworld_dat('fortune1000_va_count'), by = 'geoid') %>%
+    left_join(location_quotient_in_tract, by = 'geoid') %>%
+    left_join(competitive_effect_in_tract, by = 'geoid') %>%
+    left_join(net_resilience_in_tract, by = 'geoid') %>%
+    select(-starts_with('column_a'))
 }
 
 build_financial_capital_dim <- function(tract_dat){
