@@ -20,56 +20,43 @@ build_support_programs_dim <- function(tract_dat){
 build_infrastructure_dim <- function(tract_dat){
   aggregator <- function(x) sum(x, na.rm = TRUE)
   
-  comm_airport_count_dat <- get_dataworld_dat('commercial_airp_count')
-  gen_airport_count_dat <- get_dataworld_dat('general_airport_count') 
-  tract2DC_dist_dat <- get_dataworld_dat('tract_to_dc_distance_2') %>%
+  dist2DC_in_tract <- get_dataworld_dat('tract_to_dc_distance_2') %>%
     select(geoid, duration_hours)
-  tract2port_dist_dat <- get_dataworld_dat('tract_to_port_distance') %>%
+  dist2port_in_tract <- get_dataworld_dat('tract_to_port_distance') %>%
     select(geoid, duration_hours)
-  available_properties_dat <- get_dataworld_dat('available_properties_with_tract') %>%
-    select(geoid_census_tract, spacetotalavailable)
+  total_space_in_tract <- get_dataworld_dat('available_properties_with_tract') %>%
+    select(geoid_census_tract, spacetotalavailable) %>%
+    aggr_tract_data(tract_dat, 'spacetotalavailable', aggregator) %>%
+    rename(total_space_available = count)
   
-  total_space_in_tract <- aggr_tract_data(available_properties_dat, tract_dat, 
-                                          'spacetotalavailable', aggregator)
   tract_dat %>%
     select(geoid) %>%
-    left_join(comm_airport_count_dat, by = 'geoid') %>%
-    left_join(gen_airport_count_dat, by = 'geoid') %>%
-    left_join(tract2DC_dist_dat, by = 'geoid') %>%
-    left_join(tract2port_dist_dat, by = 'geoid', suffix = c('_dc', '_port')) %>%
+    left_join(get_dataworld_dat('commercial_airp_count'), by = 'geoid') %>%
+    left_join(get_dataworld_dat('general_airport_count'), by = 'geoid') %>%
+    left_join(dist2DC_in_tract, by = 'geoid') %>%
+    left_join(dist2port_in_tract, by = 'geoid', suffix = c('_dc', '_port')) %>%
     left_join(total_space_in_tract, by = 'geoid') %>%
-    rename(total_space_available = count) %>%
     select(-starts_with('column_a'))
 }
 
 build_quality_of_life_dim <- function(tract_dat){
   aggregator <- function(x) sum(!is.na(x))
   
-  costOfLiving.dat <- get_dataworld_dat('cost_of_living') %>%
-                      select(fips, col_index)
-  publicSchools.dat <- get_dataworld_dat('public_schools_with_tract')
-  sportsVenuesCount.dat <- get_dataworld_dat('sports_venues_count')
-  hospitalsCount.dat <- get_dataworld_dat('hospitals_with_count')
-  higherEducation.dat <- get_dataworld_dat('higher_educatio_count')
+  col_index_in_tract <- get_dataworld_dat('cost_of_living') %>%
+    select(fips, col_index) %>% 
+    add_county_data(tract_dat)
+  num_pub_schools_in_tract <- get_dataworld_dat('public_schools_with_tract') %>%
+    aggr_tract_data(tract_dat, 'school_address', aggregator) %>%
+    rename(num_public_schools = count)
   
-  col_index_in_tract <- add_county_data(costOfLiving.dat, tract_dat)
-  num_pub_schools_in_tract <- aggr_tract_data(publicSchools.dat, tract_dat, 
-                                              'school_address', aggregator) %>%
-                              rename(num_public_schools = count)
-  num_sport_venues_in_tract <- sportsVenuesCount.dat %>%
-                                right_join(tract_dat, by = 'geoid') %>%
-                                select(sports_venues_count)
-  num_hospitals_in_tract <- hospitalsCount.dat %>%
-                            right_join(tract_dat, by = 'geoid') %>%
-                            select(hospitals_with_count)
-  num_higher_ed_in_tract <- higherEducation.dat %>%
-                            right_join(tract_dat, by = 'geoid') %>%
-                            select(higher_educatio_count)
-  
-  tract_geoid <- tract_dat$geoid
-  cbind(tract_geoid, col_index_in_tract, num_pub_schools_in_tract,
-        num_sport_venues_in_tract, num_hospitals_in_tract, num_higher_ed_in_tract)
-  
+  tract_dat %>%
+    select(geoid) %>%
+    left_join(get_dataworld_dat('sports_venues_count'), by = 'geoid') %>%
+    left_join(get_dataworld_dat('hospitals_with_count'), by = 'geoid') %>%
+    left_join(get_dataworld_dat('higher_educatio_count'), by = 'geoid') %>%
+    left_join(col_index_in_tract) %>%
+    left_join(num_pub_schools_in_tract) %>%
+    select(-starts_with('column_a'))
 }
 
 build_industrial_base_dim <- function(tract_dat){

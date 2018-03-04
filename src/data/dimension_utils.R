@@ -1,12 +1,12 @@
 add_county_data <- function(source_dat, tract_dat){
   source_dat$fips <- as.character(source_dat$fips)
-  tract_dat$geoid <- as.character(tract_dat$geoid)
-  
+
   tract_dat %>%
     select(geoid) %>%
-    mutate(county_id = substr(geoid, 1, 5)) %>%
+    mutate(county_id = substr(as.character(geoid), 1, 5)) %>%
     left_join(source_dat, by=c('county_id' = 'fips')) %>%
-    select(-one_of(c('geoid', 'county_id')))
+    mutate(geoid = as.numeric(geoid)) %>%
+    select(-county_id)
 }
 
 aggr_tract_data <- function(source_dat, tract_dat, aggr_field, aggr_fn){
