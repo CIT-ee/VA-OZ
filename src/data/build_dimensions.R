@@ -5,53 +5,27 @@ build_support_programs_dim <- function(tract_dat){
   for (zone in incentive_zone_names){
     col_name <- paste0('in_', zone)
     table_name <- paste0(zone, '_with_tract')
-    zone_mask_ls[[col_name]] <- get.dataworld.df(table_name) %>%
+    zone_mask_ls[[col_name]] <- get_dataworld_dat(table_name) %>%
       get_incentives_mask(tract_dat) %>%
       rename(!!col_name := is_inzone)
   }
-  sbdc_count_in_tract <- get.dataworld.df('small_business_count') %>%
+  sbdc_count_in_tract <- get_dataworld_dat('small_business_count') %>%
     right_join(tract_dat, by = 'geoid') %>%
     select(small_business_count)
                               
   cbind(tract_dat$geoid, data.frame(zone_mask_ls), sbdc_count_in_tract) %>%
     rename(tract_geoid = `tract_dat$geoid`)
 }
-# build_support_programs_dim <- function(tract.dat){
-#   tobaccoZones.dat <- get.dataworld.df('tobacco_zones_with_tract')
-#   hubZones.dat <- get.dataworld.df('hubzones_with_tract')
-#   techZones.dat <- get.dataworld.df('technology_zones_with_tract')
-#   eZones.dat <- get.dataworld.df('ez_with_tract')
-#   goZones.dat <- get.dataworld.df('go_virginia_zones_with_tract')
-#   sbdcCounts.dat <- get.dataworld.df('small_business_count')
-#   
-#   tzone_mask <- get_incentives_mask(tobaccoZones.dat, tract.dat) %>%
-#                 rename(in_tobacco_zone = is_inzone)
-#   hubzone_mask <- get_incentives_mask(hubZones.dat, tract.dat) %>%
-#                   rename(in_hub_zone = is_inzone)
-#   techzone_mask <- get_incentives_mask(techZones.dat, tract.dat) %>%
-#                     rename(in_tech_zone = is_inzone)
-#   ezone_mask <- get_incentives_mask(eZones.dat, tract.dat) %>%
-#                 rename(in_enterprise_zone = is_inzone)
-#   gozone_mask <- get_incentives_mask(goZones.dat, tract.dat) %>%
-#                   rename(in_go_virginia_zone = is_inzone)
-#   sbdc_count_in_tract <- sbdcCounts.dat %>%
-#                           right_join(tract.dat, by = 'geoid') %>%
-#                           select(small_business_count)
-#                           
-#   tract_geoid <- tract.dat$geoid
-#   cbind(tract_geoid, tzone_mask, hubzone_mask, techzone_mask, 
-#         ezone_mask, gozone_mask, sbdc_count_in_tract)
-# }
 
 build_infrastructure_dim <- function(tract.dat){
   aggregator <- function(x) sum(x, na.rm = TRUE)
   
-  availableProperties.dat <- get.dataworld.df('available_properties_with_tract') %>%
+  availableProperties.dat <- get_dataworld_dat('available_properties_with_tract') %>%
                               select(geoid_census_tract, spacetotalavailable)
-  commercialAirportCount.dat <- get.dataworld.df('commercial_airp_count')
-  generalAirportCount.dat <- get.dataworld.df('general_airport_count')
-  tractDCDist.dat <- get.dataworld.df('tract_to_dc_distance_2')
-  tractPortDist.dat <- get.dataworld.df('tract_to_port_distance') 
+  commercialAirportCount.dat <- get_dataworld_dat('commercial_airp_count')
+  generalAirportCount.dat <- get_dataworld_dat('general_airport_count')
+  tractDCDist.dat <- get_dataworld_dat('tract_to_dc_distance_2')
+  tractPortDist.dat <- get_dataworld_dat('tract_to_port_distance') 
   
   total_spaces_in_tract <- aggr_tract_data(availableProperties.dat, tract.dat, 
                                            'spacetotalavailable', aggregator) %>%
@@ -79,12 +53,12 @@ build_infrastructure_dim <- function(tract.dat){
 build_quality_of_life_dim <- function(tract.dat){
   aggregator <- function(x) sum(!is.na(x))
   
-  costOfLiving.dat <- get.dataworld.df('cost_of_living') %>%
+  costOfLiving.dat <- get_dataworld_dat('cost_of_living') %>%
                       select(fips, col_index)
-  publicSchools.dat <- get.dataworld.df('public_schools_with_tract')
-  sportsVenuesCount.dat <- get.dataworld.df('sports_venues_count')
-  hospitalsCount.dat <- get.dataworld.df('hospitals_with_count')
-  higherEducation.dat <- get.dataworld.df('higher_educatio_count')
+  publicSchools.dat <- get_dataworld_dat('public_schools_with_tract')
+  sportsVenuesCount.dat <- get_dataworld_dat('sports_venues_count')
+  hospitalsCount.dat <- get_dataworld_dat('hospitals_with_count')
+  higherEducation.dat <- get_dataworld_dat('higher_educatio_count')
   
   col_index_in_tract <- add_county_data(costOfLiving.dat, tract.dat)
   num_pub_schools_in_tract <- aggr_tract_data(publicSchools.dat, tract.dat, 
@@ -107,12 +81,12 @@ build_quality_of_life_dim <- function(tract.dat){
 }
 
 build_industrial_base_dim <- function(tract.dat){
-  locationQuotient.dat <- get.dataworld.df('cost_of_living') %>%
+  locationQuotient.dat <- get_dataworld_dat('cost_of_living') %>%
                           select(fips, `2017_location_quotient`)
-  competitiveEffect.dat <- get.dataworld.df('cost_of_living') %>%
+  competitiveEffect.dat <- get_dataworld_dat('cost_of_living') %>%
                             select(fips, competitive_effect)
-  fortune1000Count.dat <- get.dataworld.df('fortune1000_va_count')
-  netResilience.dat <- get.dataworld.df('net_change_establishments') %>%
+  fortune1000Count.dat <- get_dataworld_dat('fortune1000_va_count')
+  netResilience.dat <- get_dataworld_dat('net_change_establishments') %>%
                         select(geo_county, net_change_6years) %>%
                         rename(fips = geo_county)
   
@@ -129,10 +103,10 @@ build_industrial_base_dim <- function(tract.dat){
 }
 
 build_financial_capital_dim <- function(tract.dat){
-  commercialBanks.dat <- get.dataworld.df('commercial_banks') %>%
+  commercialBanks.dat <- get_dataworld_dat('commercial_banks') %>%
                           select(fips, number_of_establishments)
-  cdfis.dat <- get.dataworld.df('cdfis_with_trac_count')
-  ventureCapitalFirms.dat <- get.dataworld.df('vc_with_tract_count')
+  cdfis.dat <- get_dataworld_dat('cdfis_with_trac_count')
+  ventureCapitalFirms.dat <- get_dataworld_dat('vc_with_tract_count')
   
   comm_banks_count_in_tract <- add_county_data(commercialBanks.dat, tract.dat) %>%
                                 rename(num_commercial_banks = number_of_establishments)
@@ -149,9 +123,9 @@ build_financial_capital_dim <- function(tract.dat){
 }
 
 build_researchNDev_dim <- function(tract.dat){
-  federalLabsCount.dat <- get.dataworld.df('federal_federal_count')
-  researchParksCount.dat <- get.dataworld.df('research_parks_count')
-  researchUniDist.dat <- get.dataworld.df('r1r2_universiti_mean_distance')
+  federalLabsCount.dat <- get_dataworld_dat('federal_federal_count')
+  researchParksCount.dat <- get_dataworld_dat('research_parks_count')
+  researchUniDist.dat <- get_dataworld_dat('r1r2_universiti_mean_distance')
   
   federalLabs_count_in_tract <- federalLabsCount.dat %>%
                                   right_join(tract.dat, by='geoid') %>%
