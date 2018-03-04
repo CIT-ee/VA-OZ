@@ -1,24 +1,22 @@
-add_county_data <- function(source.dat, tract.dat){
-  source.dat$fips <- as.character(source.dat$fips)
-  tract.dat$geoid <- as.character(tract.dat$geoid)
+add_county_data <- function(source_dat, tract_dat){
+  source_dat$fips <- as.character(source_dat$fips)
+  tract_dat$geoid <- as.character(tract_dat$geoid)
   
-  tract.dat %>%
+  tract_dat %>%
     select(geoid) %>%
     mutate(county_id = substr(geoid, 1, 5)) %>%
-    left_join(source.dat, by=c('county_id' = 'fips')) %>%
+    left_join(source_dat, by=c('county_id' = 'fips')) %>%
     select(-one_of(c('geoid', 'county_id')))
 }
 
-aggr_tract_data <- function(source.dat, tract.dat, srcField, aggrFunc){
-  # this counts NA rows as 1. Find better way to do this
-  group.tract.data(source.dat, tract.dat) %>%
-    # summarize(count = sum(!is.na(!!sym(srcField)))) %>%
-    summarize(count = aggrFunc(!!sym(srcField))) %>%
+aggr_tract_data <- function(source_dat, tract_dat, aggr_field, aggr_fn){
+  group_tract_data(source_dat, tract_dat) %>%
+    summarize(count = aggr_fn(!!sym(aggr_field))) %>%
     select(-geoid)
 }
 
-get_incentives_mask <- function(source.dat, tract.dat){
-  group.tract.data(source.dat, tract.dat) %>% 
+get_incentives_mask <- function(source_dat, tract_dat){
+  group_tract_data(source_dat, tract_dat) %>% 
     summarize(is_inzone = sum(!is.na(!!sym(names(.)[2])))) %>%
     select(-geoid)
 }
