@@ -11,8 +11,7 @@ add_county_data <- function(source_dat, tract_dat){
 
 aggr_tract_data <- function(source_dat, tract_dat, aggr_field, aggr_fn){
   group_tract_data(source_dat, tract_dat) %>%
-    summarize(count = aggr_fn(!!sym(aggr_field))) %>%
-    select(-geoid)
+    summarize(count = aggr_fn(!!sym(aggr_field)))
 }
 
 get_incentives_mask <- function(source_dat, tract_dat){
