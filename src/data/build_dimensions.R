@@ -81,23 +81,17 @@ build_industrial_base_dim <- function(tract_dat){
 }
 
 build_financial_capital_dim <- function(tract_dat){
-  commercialBanks.dat <- get_dataworld_dat('commercial_banks') %>%
-                          select(fips, number_of_establishments)
-  cdfis.dat <- get_dataworld_dat('cdfis_with_trac_count')
-  ventureCapitalFirms.dat <- get_dataworld_dat('vc_with_tract_count')
+  comm_banks_count_in_tract <- get_dataworld_dat('commercial_banks') %>%
+    select(fips, number_of_establishments) %>%
+    add_county_data(tract_dat) %>%
+    rename(num_commercial_banks = number_of_establishments)
   
-  comm_banks_count_in_tract <- add_county_data(commercialBanks.dat, tract_dat) %>%
-                                rename(num_commercial_banks = number_of_establishments)
-  cdfis_count_in_tract <- cdfis.dat %>%
-                          right_join(tract_dat, by='geoid') %>%
-                          select(cdfis_with_trac_count)
-  vc_count_in_tract <- ventureCapitalFirms.dat %>%
-                        right_join(tract_dat, by='geoid') %>%
-                        select(vc_with_tract_count)
-  
-  tract_geoid = tract_dat$geoid
-  cbind(tract_geoid, comm_banks_count_in_tract, 
-        cdfis_count_in_tract, vc_count_in_tract)
+  tract_dat %>%
+    select(geoid) %>%
+    left_join(get_dataworld_dat('cdfis_with_trac_count'), by = 'geoid') %>%
+    left_join(get_dataworld_dat('vc_with_tract_count'), by = 'geoid') %>%
+    left_join(comm_banks_count_in_tract, by = 'geoid') %>%
+    select(-starts_with('column_a'))
 }
 
 build_researchNDev_dim <- function(tract_dat){
