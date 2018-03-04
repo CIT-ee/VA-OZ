@@ -1,29 +1,47 @@
-build_support_programs_dim <- function(tract.dat){
-  tobaccoZones.dat <- get.dataworld.df('tobacco_zones_with_tract')
-  hubZones.dat <- get.dataworld.df('hubzones_with_tract')
-  techZones.dat <- get.dataworld.df('technology_zones_with_tract')
-  eZones.dat <- get.dataworld.df('ez_with_tract')
-  goZones.dat <- get.dataworld.df('go_virginia_zones_with_tract')
-  sbdcCounts.dat <- get.dataworld.df('small_business_count')
-  
-  tzone_mask <- get_incentives_mask(tobaccoZones.dat, tract.dat) %>%
-                rename(in_tobacco_zone = is_inzone)
-  hubzone_mask <- get_incentives_mask(hubZones.dat, tract.dat) %>%
-                  rename(in_hub_zone = is_inzone)
-  techzone_mask <- get_incentives_mask(techZones.dat, tract.dat) %>%
-                    rename(in_tech_zone = is_inzone)
-  ezone_mask <- get_incentives_mask(eZones.dat, tract.dat) %>%
-                rename(in_enterprise_zone = is_inzone)
-  gozone_mask <- get_incentives_mask(goZones.dat, tract.dat) %>%
-                  rename(in_go_virginia_zone = is_inzone)
-  sbdc_count_in_tract <- sbdcCounts.dat %>%
-                          right_join(tract.dat, by = 'geoid') %>%
-                          select(small_business_count)
-                          
-  tract_geoid <- tract.dat$geoid
-  cbind(tract_geoid, tzone_mask, hubzone_mask, techzone_mask, 
-        ezone_mask, gozone_mask, sbdc_count_in_tract)
+build_support_programs_dim <- function(tract_dat){
+  incentive_zone_names <- c('tobacco_zones', 'hubzones', 'technology_zones', 
+                         'ez', 'go_virginia_zones')
+  zone_mask_ls <- list()
+  for (zone in incentive_zone_names){
+    col_name <- paste0('in_', zone)
+    table_name <- paste0(zone, '_with_tract')
+    zone_mask_ls[[col_name]] <- get.dataworld.df(table_name) %>%
+      get_incentives_mask(tract_dat) %>%
+      rename(!!col_name := is_inzone)
+  }
+  sbdc_count_in_tract <- get.dataworld.df('small_business_count') %>%
+    right_join(tract_dat, by = 'geoid') %>%
+    select(small_business_count)
+                              
+  cbind(tract_dat$geoid, data.frame(zone_mask_ls), sbdc_count_in_tract) %>%
+    rename(tract_geoid = `tract_dat$geoid`)
 }
+# build_support_programs_dim <- function(tract.dat){
+#   tobaccoZones.dat <- get.dataworld.df('tobacco_zones_with_tract')
+#   hubZones.dat <- get.dataworld.df('hubzones_with_tract')
+#   techZones.dat <- get.dataworld.df('technology_zones_with_tract')
+#   eZones.dat <- get.dataworld.df('ez_with_tract')
+#   goZones.dat <- get.dataworld.df('go_virginia_zones_with_tract')
+#   sbdcCounts.dat <- get.dataworld.df('small_business_count')
+#   
+#   tzone_mask <- get_incentives_mask(tobaccoZones.dat, tract.dat) %>%
+#                 rename(in_tobacco_zone = is_inzone)
+#   hubzone_mask <- get_incentives_mask(hubZones.dat, tract.dat) %>%
+#                   rename(in_hub_zone = is_inzone)
+#   techzone_mask <- get_incentives_mask(techZones.dat, tract.dat) %>%
+#                     rename(in_tech_zone = is_inzone)
+#   ezone_mask <- get_incentives_mask(eZones.dat, tract.dat) %>%
+#                 rename(in_enterprise_zone = is_inzone)
+#   gozone_mask <- get_incentives_mask(goZones.dat, tract.dat) %>%
+#                   rename(in_go_virginia_zone = is_inzone)
+#   sbdc_count_in_tract <- sbdcCounts.dat %>%
+#                           right_join(tract.dat, by = 'geoid') %>%
+#                           select(small_business_count)
+#                           
+#   tract_geoid <- tract.dat$geoid
+#   cbind(tract_geoid, tzone_mask, hubzone_mask, techzone_mask, 
+#         ezone_mask, gozone_mask, sbdc_count_in_tract)
+# }
 
 build_infrastructure_dim <- function(tract.dat){
   aggregator <- function(x) sum(x, na.rm = TRUE)
