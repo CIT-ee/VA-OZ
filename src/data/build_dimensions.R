@@ -94,22 +94,11 @@ build_financial_capital_dim <- function(tract_dat){
     select(-starts_with('column_a'))
 }
 
-build_researchNDev_dim <- function(tract_dat){
-  federalLabsCount.dat <- get_dataworld_dat('federal_federal_count')
-  researchParksCount.dat <- get_dataworld_dat('research_parks_count')
-  researchUniDist.dat <- get_dataworld_dat('r1r2_universiti_mean_distance')
-  
-  federalLabs_count_in_tract <- federalLabsCount.dat %>%
-                                  right_join(tract_dat, by='geoid') %>%
-                                  select(federal_federal_count)
-  researchParks_count_in_tract <- researchParksCount.dat %>%
-                                  right_join(tract_dat, by='geoid') %>%
-                                  select(research_parks_count)
-  researchUni_dist_from_tract <- researchUniDist.dat %>%
-                                  right_join(tract_dat, by='geoid') %>%
-                                  select(r1r2_universiti_mean_distance)
-  
-  tract_geoid = tract_dat$geoid
-  cbind(tract_geoid, federalLabs_count_in_tract, 
-        researchParks_count_in_tract, researchUni_dist_from_tract)
+build_research_dev_dim <- function(tract_dat){
+  tract_dat %>%
+    select(geoid) %>%
+    left_join(get_dataworld_dat('federal_federal_count'), by = 'geoid') %>%
+    left_join(get_dataworld_dat('research_parks_count'), by = 'geoid') %>%
+    left_join(get_dataworld_dat('r1r2_universiti_mean_distance'), by = 'geoid') %>%
+    select(-starts_with('column_a'))
 }
