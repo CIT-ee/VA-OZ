@@ -1,3 +1,9 @@
 packrat/lib*/
 .Rproj.user
+
+/* ignore environment related files */
+.env
+.Renviron
+/* ignore raw config files */
+config/
 packrat/src/
