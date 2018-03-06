@@ -1,3 +1,11 @@
+#' Builds the dataset for the Support Programs Dimension in the Index
+#'
+#' @param tract_dat dataframe with tract information
+#'
+#' @return dataframe of indicators representing the Support Programs Dimension
+#' @export
+#'
+#' @examples support_programs_dat <- build_support_programs_dim(tract_va_dat)
 build_support_programs_dim <- function(tract_dat){
   dim_name <- 'support_programs'
   incentive_zone_names <- c('tobacco_zones', 'hubzones', 'technology_zones', 
@@ -19,6 +27,14 @@ build_support_programs_dim <- function(tract_dat){
   cbind(data.frame(zone_mask_ls), sbdc_count_in_tract)
 }
 
+#' Builds the dataset for the Infrastructure Dimension in the Index
+#'
+#' @param tract_dat dataframe with tract information
+#'
+#' @return dataframe of indicators representing the Infrastructure Dimension
+#' @export
+#'
+#' @examples infrastructure_dat <- build_infrastructure_dim(tract_va_dat)
 build_infrastructure_dim <- function(tract_dat){
   dim_name <- 'infrastructure'
   aggregator <- function(x) sum(x, na.rm = TRUE)
@@ -42,6 +58,14 @@ build_infrastructure_dim <- function(tract_dat){
     select(-starts_with('column_a'))
 }
 
+#' Builds the dataset for the Quality of Life Dimension in the Index
+#'
+#' @param tract_dat dataframe with tract information
+#'
+#' @return dataframe of indicators representing the Quality of Life Dimension
+#' @export
+#'
+#' @examples quality_of_life_dat <- build_quality_of_life_dim(tract_va_dat)
 build_quality_of_life_dim <- function(tract_dat){
   dim_name <- 'quality_of_life'
   aggregator <- function(x) sum(!is.na(x))
@@ -63,6 +87,14 @@ build_quality_of_life_dim <- function(tract_dat){
     select(-starts_with('column_a'))
 }
 
+#' Builds the dataset for the Industrial Base Dimension in the Index
+#'
+#' @param tract_dat dataframe with tract information
+#'
+#' @return dataframe of indicators representing the Industrial Base Dimension
+#' @export
+#'
+#' @examples industrial_base_dat <- build_industrial_base_dim(tract_va_dat)
 build_industrial_base_dim <- function(tract_dat){
   dim_name <- 'industrial_base'
   location_quotient_in_tract <- load_dataframe('cost_of_living', 'quality_of_life') %>%
@@ -85,6 +117,14 @@ build_industrial_base_dim <- function(tract_dat){
     select(-starts_with('column_a'))
 }
 
+#' Builds the dataset for the Financial Capital Dimension in the Index
+#'
+#' @param tract_dat dataframe with tract information
+#'
+#' @return dataframe of indicators representing the Financial Capital Dimension
+#' @export
+#'
+#' @examples financial_capital_dat <- build_financial_capital_dim(tract_va_dat)
 build_financial_capital_dim <- function(tract_dat){
   dim_name <- 'financial_capital'
   comm_banks_count_in_tract <- load_dataframe('commercial_banks', dim_name) %>%
@@ -100,6 +140,14 @@ build_financial_capital_dim <- function(tract_dat){
     select(-starts_with('column_a'))
 }
 
+#' Builds the dataset for the Research n' Dev Dimension in the Index
+#'
+#' @param tract_dat dataframe with tract information
+#'
+#' @return dataframe of indicators representing the Research n' Dev Dimension
+#' @export
+#'
+#' @examples research_dev_dat <- build_research_dev_dim(tract_va_dat)
 build_research_dev_dim <- function(tract_dat){
   dim_name <- 'research_dev'
   tract_dat %>%
